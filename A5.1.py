@@ -1,0 +1,63 @@
+import random
+
+def gcd(a, b):
+    while b != 0:
+        a, b = b, a % b
+    return a
+
+def generate_keypair(p, q):
+    n = p * q
+    phi = (p - 1) * (q - 1)
+    e = random.randrange(1, phi)
+    # print("e=",e)
+    g = gcd(e, phi)
+    while g != 1:
+        e = random.randrange(1, phi)
+        g = gcd(e, phi)
+    d = multiplicative_inverse(e, phi)
+    return ((e, n), (d, n))
+
+def multiplicative_inverse(e, phi):
+    d = 0
+    x1 = 0
+    x2 = 1
+    y1 = 1
+    temp_phi = phi
+    while e > 0:
+        temp1 = temp_phi // e
+        temp2 = temp_phi - temp1 * e
+        temp_phi = e
+        e = temp2
+        x = x2 - temp1 * x1
+        y = d - temp1 * y1
+        x2 = x1
+        x1 = x
+        d = y1
+        y1 = y
+    if temp_phi == 1:
+        return d + phi
+
+def encrypt(public_key, plaintext):
+    key, n = public_key
+    cipher = [(ord(char) ** key) % n for char in plaintext]
+    return cipher
+
+def decrypt(private_key, ciphertext):
+    key, n = private_key
+    plain = [chr((char ** key) % n) for char in ciphertext]
+    return ''.join(plain)
+
+
+p = int(input("Enter Prime No1.: "))
+q = int(input("Enter Prime No2.: "))
+public_key, private_key = generate_keypair(p, q)
+
+plaintext = input("Enter PlainText: ")
+ciphertext = encrypt(public_key, plaintext)
+
+# Decrypt the ciphertext
+decrypted_text = decrypt(private_key, ciphertext)
+
+print("Plaintext:", plaintext)
+print("Ciphertext:", ciphertext)
+print("Decrypted text:", decrypted_text)
